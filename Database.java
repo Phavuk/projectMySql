@@ -1,3 +1,5 @@
+package sk.itsovy.javaSql;
+
 import java.lang.String;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -5,14 +7,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Database {
-
-    private final String username="klaudia";
-    private final String password="jankopanko";
-    private final String host = "localhost";
-    private final String port = "3306";
+    private final String username = "user2";
+    private final String password = "jankopanko";
     private final String url = "jdbc:mysql://localhost:3306/db1";
 
     private Connection getConnection(){
@@ -71,65 +72,167 @@ public class Database {
 
             PreparedStatement pst = null;
             ResultSet rs = null;
-            pst = conn.prepareStatement("select * from person where surname =? ");
+            pst = conn.prepareStatement("select * from person where surname=? ");
             pst.setString(1, surname);
             rs = pst.executeQuery();
             while (rs.next()) {
-                jozo = new Person(rs.getString("name"),rs.getString("surname"),
-                        rs.getDate("dob"),rs.getString("bnum"));
+                jozo = new Person(rs.getString("FirstName"),rs.getString("LastName"),
+                        rs.getDate("dnar"),rs.getString("bnum"));
             }
 
 
         }catch (SQLException e){
             e.printStackTrace();
         }
-
-
         return jozo;
     }
 
-   public Person selectBybid(String bnum){
-       Person jozo = null;
-       try {
-           Connection conn = getConnection();
-
-           PreparedStatement pst = null;
-           ResultSet rs = null;
-           pst = conn.prepareStatement("select * FROM person where bnum = ? ");
-           pst.setString(1,bnum);
-           rs = pst.executeQuery();
-           while (rs.next()){
-               jozo = new Person(rs.getString("name"),
-                       rs.getDate("dob"),rs.getString("bnum"));
-           }
-
-       }catch (SQLException e){
-           e.printStackTrace();
-       }
-       return jozo;
-   }
-
-    public List <Person> getAllMan(){
-        Connection conn=getConnection();
-        String query="SELECT * FROM person WHERE pin LIKE '__0%' OR pin LIKE '__1%'";
-        List<Person> persons = new ArrayList<>();
-        ResultSet rs;
+    public Person selectByBNum(String bnum){
+        Person jozo = null;
         try {
-            PreparedStatement stmt=conn.prepareStatement(query);
-            rs=stmt.executeQuery();
-            while(rs.next()){
-                String lastname=rs.getString("lname");
-                String fname=rs.getString("fname");
-                String pin=rs.getString("pin");
-                Date dob=rs.getDate("dob");
-                Person p=new Person(lastname,fname,dob,pin);
-                persons.add(p);
+            Connection conn = getConnection();
+
+            PreparedStatement pst = null;
+            ResultSet rs = null;
+            pst = conn.prepareStatement("select * from person where bnum=? ");
+            pst.setString(1, bnum);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                jozo = new Person(rs.getString("FirstName"),rs.getString("LastName"),
+                        rs.getDate("dnar"),rs.getString("bnum"));
             }
-            closeConnection(conn);
-        } catch (SQLException e) {
+
+
+        }catch (SQLException e){
             e.printStackTrace();
         }
+        return jozo;
+    }
+
+    public void selectWomenNumber(){
+        //Person jozo = null;
+        try {
+            Connection conn = getConnection();
+
+            PreparedStatement pst = null;
+            ResultSet rs = null;
+            pst = conn.prepareStatement("SELECT COUNT(*) AS pocet FROM person WHERE bnum LIKE '__5%' OR bnum LIKE '__6%'");
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                System.out.println(rs.getInt("pocet"));
+            }
+            /*while (rs.next()) {
+                jozo = new Person(rs.getString("FirstName"),rs.getString("LastName"),
+                        rs.getDate("dnar"),rs.getString("bnum"));
+            }*/
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        //return jozo;
+    }
+
+
+    public List <Person> selectAllMen(){
+        Connection conn = getConnection();
+        String query = "SELECT * FROM person WHERE bnum LIKE '__1%' OR bnum LIKE '__0%' ";
+        List <Person> persons = new ArrayList<>();
+
+        try {
+            PreparedStatement pst = null;
+            ResultSet rs = null;
+            pst = conn.prepareStatement(query);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+
+                Person p = new Person(rs.getString("FirstName"),rs.getString("LastName"),
+                        rs.getDate("dnar"),rs.getString("bnum"));
+                persons.add(p);
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
         return persons;
     }
+
+
+    public List <Person> selectAllAdult(){
+        Connection conn = getConnection();
+        //String query = "SELECT * FROM persons WHERE dnar <= Current_date() - 18 ";
+        String query = "SELECT * FROM person WHERE dnar < (Current_date() - INTERVAL 18 YEAR)";
+        List <Person> persons = new ArrayList<>();
+
+        try {
+            PreparedStatement pst = null;
+            ResultSet rs = null;
+            pst = conn.prepareStatement(query);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+
+                Person p = new Person(rs.getString("FirstName"),rs.getString("LastName"),
+                        rs.getDate("dnar"),rs.getString("bnum"));
+                persons.add(p);
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return persons;
+    }
+
+    public Set <String> selectAllFirstName(){
+        Connection conn = getConnection();
+        //String query = "SELECT * FROM persons WHERE dnar <= Current_date() - 18 ";
+        String query = "SELECT FirstName FROM person";
+        Set <String> persons = new HashSet<>();
+
+        try {
+            PreparedStatement pst = null;
+            ResultSet rs = null;
+            pst = conn.prepareStatement(query);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+
+                String fname = rs.getString("FirstName");
+                persons.add(fname);
+                persons.add(fname);
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return persons;
+    }
+
+
+    public List <Person> selectAll(){
+        Connection conn = getConnection();
+        //String query = "SELECT * FROM persons WHERE dnar <= Current_date() - 18 ";
+        String query = "SELECT * FROM person ";
+        List <Person> persons = new ArrayList<>();
+
+        try {
+            PreparedStatement pst = null;
+            ResultSet rs = null;
+            pst = conn.prepareStatement(query);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+
+                Person p = new Person(rs.getString("name"),rs.getString("surname"),
+                        rs.getDate("dob"),rs.getString("bnum"));
+                persons.add(p);
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return persons;
+    }
+
 
 }
